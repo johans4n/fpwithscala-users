@@ -47,24 +47,21 @@ class UsersController[F[_] : Sync] extends Http4sDsl[F] {
 
     }
 
-
-  /*private def deleteUser(userService: UserService[F]): HttpRoutes[F] =
+  private def deleteUser(userService: UserService[F]): HttpRoutes[F] =
     HttpRoutes.of[F] {
-      case req@POST -> Root =>
-        val action = for {
-          user <- req.as[User]
-          result <- userService.create(user).value
-        } yield result
+      case DELETE -> Root / legalId =>
+        val action = userService.delete(legalId)
 
-        action.flatMap {
-          case Right(saved) => Ok(saved.asJson)
-          case Left(UserAlreadyExistsError(existing)) => Conflict(s"The user with legal id ${existing.legalId} already exists")
+        action match {
+          case 1 => Ok()
+          case 0 => Conflict("User not found")
+          case x => Conflict(s"conflicto: ${x}")
         }
-    }*/
+    }
 
   def endpoints(userService: UserService[F]): HttpRoutes[F] = {
     //To convine routes use the function `<+>`
-    createUser(userService) <+> getUser(userService)
+    createUser(userService) <+> getUser(userService) <+> deleteUser(userService)
   }
 
 }

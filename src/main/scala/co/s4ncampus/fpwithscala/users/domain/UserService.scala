@@ -11,6 +11,8 @@ class UserService[F[_]](repository: UserRepositoryAlgebra[F], validation: UserVa
     } yield saved
 
   def get(legalId: String): OptionT[F, User] = repository.findByLegalId(legalId)
+
+  def delete(legalId:String):F[Int] = repository.delUser(legalId)
 }
 
 object UserService {
