@@ -9,12 +9,14 @@ class UserService[F[_]](repository: UserRepositoryAlgebra[F], validation: UserVa
       _ <- validation.doesNotExist(user)
       saved <- EitherT.liftF(repository.create(user))
     } yield saved
+
+  def get(legalId: String): OptionT[F, User] = repository.findByLegalId(legalId)
 }
 
-object UserService{
+object UserService {
   def apply[F[_]](
-                 repositoryAlgebra: UserRepositoryAlgebra[F],
-                 validationAlgebra: UserValidationAlgebra[F],
+                   repositoryAlgebra: UserRepositoryAlgebra[F],
+                   validationAlgebra: UserValidationAlgebra[F],
                  ): UserService[F] =
     new UserService[F](repositoryAlgebra, validationAlgebra)
 }

@@ -14,32 +14,61 @@ import org.http4s.{EntityDecoder, HttpRoutes}
 
 import co.s4ncampus.fpwithscala.users.domain.User
 
-class UsersController[F[_]: Sync] extends Http4sDsl[F] {
+class UsersController[F[_] : Sync] extends Http4sDsl[F] {
 
-    implicit val userDecoder: EntityDecoder[F, User] = jsonOf
+  implicit val userDecoder: EntityDecoder[F, User] = jsonOf
 
-    private def createUser(userService: UserService[F]): HttpRoutes[F] = 
-        HttpRoutes.of[F] {
-            case req @ POST -> Root =>
-                val action = for {
-                    user <- req.as[User]
-                    result <- userService.create(user).value
-                } yield result
-                
-                action.flatMap {
-                    case Right(saved) => Ok(saved.asJson)
-                    case Left(UserAlreadyExistsError(existing)) => Conflict(s"The user with legal id ${existing.legalId} already exists")
-                }
+  private def createUser(userService: UserService[F]): HttpRoutes[F] =
+    HttpRoutes.of[F] {
+      case req@POST -> Root =>
+        val action = for {
+          user <- req.as[User]
+          result <- userService.create(user).value
+        } yield result
+
+        action.flatMap {
+          case Right(saved) => Ok(saved.asJson)
+          case Left(UserAlreadyExistsError(existing)) => Conflict(s"The user with legal id ${existing.legalId} already exists")
         }
-
-    def endpoints(userService: UserService[F]): HttpRoutes[F] = {
-        //To convine routes use the function `<+>`
-        createUser(userService)
     }
+
+  private def getUser(userService: UserService[F]): HttpRoutes[F] =
+    HttpRoutes.of[F] {
+      case GET -> Root / legalId =>
+
+        val action = for {
+          result <- userService.get(legalId).value
+        } yield result
+
+        action.flatMap {
+          case Some(usr) => Ok(usr.asJson)
+          case None => NotFound()
+        }
+    }
+
+
+  /*private def deleteUser(userService: UserService[F]): HttpRoutes[F] =
+    HttpRoutes.of[F] {
+      case req@POST -> Root =>
+        val action = for {
+          user <- req.as[User]
+          result <- userService.create(user).value
+        } yield result
+
+        action.flatMap {
+          case Right(saved) => Ok(saved.asJson)
+          case Left(UserAlreadyExistsError(existing)) => Conflict(s"The user with legal id ${existing.legalId} already exists")
+        }
+    }*/
+
+  def endpoints(userService: UserService[F]): HttpRoutes[F] = {
+    //To convine routes use the function `<+>`
+    createUser(userService) <+> getUser(userService)
+  }
 
 }
 
 object UsersController {
-    def endpoints[F[_]: Sync](userService: UserService[F]): HttpRoutes[F] =
-        new UsersController[F].endpoints(userService)
+  def endpoints[F[_] : Sync](userService: UserService[F]): HttpRoutes[F] =
+    new UsersController[F].endpoints(userService)
 }

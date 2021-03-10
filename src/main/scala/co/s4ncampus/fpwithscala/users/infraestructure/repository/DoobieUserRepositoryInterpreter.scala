@@ -10,7 +10,8 @@ import cats.effect.Bracket
 
 private object UserSQL {
 
-  def insert(user: User): Update0 = sql"""
+  def insert(user: User): Update0 =
+    sql"""
     INSERT INTO USERS (LEGAL_ID, FIRST_NAME, LAST_NAME, EMAIL, PHONE)
     VALUES (${user.legalId}, ${user.firstName}, ${user.lastName}, ${user.email}, ${user.phone})
   """.update
@@ -23,18 +24,27 @@ private object UserSQL {
 
 }
 
-class DoobieUserRepositoryInterpreter[F[_]: Bracket[?[_], Throwable]](val xa: Transactor[F])
-    extends UserRepositoryAlgebra[F] {
+class DoobieUserRepositoryInterpreter[F[_] : Bracket[?[_], Throwable]](val xa: Transactor[F])
+  extends UserRepositoryAlgebra[F] {
+
   import UserSQL._
 
-  def create(user: User): F[User] = 
+  def create(user: User): F[User] =
     insert(user).withUniqueGeneratedKeys[Long]("ID").map(id => user.copy(id = id.some)).transact(xa)
 
   def findByLegalId(legalId: String): OptionT[F, User] = OptionT(selectByLegalId(legalId).option.transact(xa))
 
+  def getUser(legalId: String): F[User] =
+    selectByLegalId(legalId).option.map(usr => usr.get).transact(xa)
+
+  /*  selectByLegalId(legalId).option.map(usr => usr match{
+      case Some(None)
+    }).transact(xa)*/
+
+
 }
 
 object DoobieUserRepositoryInterpreter {
-  def apply[F[_]: Bracket[?[_], Throwable]](xa: Transactor[F]): DoobieUserRepositoryInterpreter[F] =
+  def apply[F[_] : Bracket[?[_], Throwable]](xa: Transactor[F]): DoobieUserRepositoryInterpreter[F] =
     new DoobieUserRepositoryInterpreter[F](xa)
 }
