@@ -44,6 +44,7 @@ class UsersController[F[_] : Sync] extends Http4sDsl[F] {
           case Some(usr) => Ok(usr.asJson)
           case None => NotFound()
         }
+
     }
 
 
