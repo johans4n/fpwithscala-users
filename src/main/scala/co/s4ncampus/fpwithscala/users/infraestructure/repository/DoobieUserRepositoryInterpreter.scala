@@ -34,7 +34,7 @@ class DoobieUserRepositoryInterpreter[F[_] : Bracket[?[_], Throwable]](val xa: T
   import UserSQL._
 
   def create(user: User): F[User] =
-    insert(user).withUniqueGeneratedKeys[Long]("ID").map(id => user.copy(id = id.some)).transact(xa)
+    insert(user).withUniqueGeneratedKeys[Long]("id").map(id => user.copy(id = id.some)).transact(xa)
 
   def findByLegalId(legalId: String): OptionT[F, User] = OptionT(selectByLegalId(legalId).option.transact(xa))
 
