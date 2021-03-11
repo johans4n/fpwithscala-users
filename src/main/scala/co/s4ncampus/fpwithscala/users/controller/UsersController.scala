@@ -68,11 +68,14 @@ class UsersController[F[_] : Sync] extends Http4sDsl[F] {
         val action = for {
           user <- req.as[User]
           result <- userService.update(user)
-        } yield result
+        } yield (user, result)
 
         action.flatMap {
-          case true => Ok()
-          case false => NotFound()
+          case (user, true) => userService.get(user.legalId).value.flatMap {
+            case Some(usr) => Ok(usr.asJson)
+            case None => NotFound()
+          }
+          case (_, false) => NotFound()
         }
     }
 
