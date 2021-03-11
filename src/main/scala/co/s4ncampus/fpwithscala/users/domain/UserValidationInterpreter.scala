@@ -5,8 +5,9 @@ import cats.data.EitherT
 
 class UserValidationInterpreter[F[_]: Applicative](repository: UserRepositoryAlgebra[F])
     extends UserValidationAlgebra[F] {
-  def doesNotExist(user: User): EitherT[F, UserAlreadyExistsError, Unit] =
-    repository.findByLegalId(user.legalId).map(UserAlreadyExistsError).toLeft(())
+  def doesNotExist(legalId:String): EitherT[F, UserAlreadyExistsError, Unit] =
+    repository.findByLegalId(legalId).map(UserAlreadyExistsError).toLeft(())
+
 
 }
 
