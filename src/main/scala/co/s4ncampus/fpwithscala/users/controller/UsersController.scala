@@ -41,15 +41,9 @@ class UsersController[F[_] : Sync] extends Http4sDsl[F] {
   private def deleteUser(userService: UserService[F]): HttpRoutes[F] =
     HttpRoutes.of[F] {
       case DELETE -> Root / legalId =>
-        val action = for (
-          result <- userService.delete(legalId).value
-        ) yield result
-
-        action.flatMap {
-          case Right(0) => NotFound()
-          case Right(1) => Ok("Columnas eliminadas: 1")
-          case Right(x) => Ok(s"${x} ")
-          case Left(existing) => Conflict(s"${existing}")
+        userService.delete(legalId).flatMap {
+          case false => NotFound()
+          case true => Ok("Columnas eliminadas: 1")
         }
     }
 

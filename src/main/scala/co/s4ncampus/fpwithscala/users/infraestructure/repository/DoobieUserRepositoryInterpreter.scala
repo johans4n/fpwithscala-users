@@ -41,10 +41,7 @@ class DoobieUserRepositoryInterpreter[F[_] : Bracket[?[_], Throwable]](val xa: T
   def getUser(legalId: String): F[User] =
     selectByLegalId(legalId).option.map(usr => usr.get).transact(xa)
 
-  def delUser(legalId: String): F[Int] = deleteUser(legalId).run.transact(xa)
-
-
-
+  def delUser(legalId: String): F[Boolean] = deleteUser(legalId).run.transact(xa).map(_ == 1)
 
 }
 
