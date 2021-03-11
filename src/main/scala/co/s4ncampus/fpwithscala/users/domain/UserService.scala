@@ -13,9 +13,11 @@ class UserService[F[_]](repository: UserRepositoryAlgebra[F], validation: UserVa
 
   def get(legalId: String): OptionT[F, User] = repository.findByLegalId(legalId)
 
+  def update(user: User): F[Boolean] =
+    repository.updateUser(user)
+
   def delete(legalId: String): F[Boolean] =
     repository.delUser(legalId)
-
 
 }
 
