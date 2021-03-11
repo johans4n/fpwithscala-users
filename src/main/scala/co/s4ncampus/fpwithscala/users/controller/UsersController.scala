@@ -62,9 +62,24 @@ class UsersController[F[_] : Sync] extends Http4sDsl[F] {
         }
     }*/
 
+  private def updateUser(userService: UserService[F]): HttpRoutes[F] =
+    HttpRoutes.of[F] {
+      case req@PUT -> Root =>
+        val action = for {
+          user <- req.as[User]
+          result <- userService.update(user)
+        } yield result
+
+        action.flatMap {
+          case true => Ok()
+          case false => NotFound()
+        }
+    }
+
+
   def endpoints(userService: UserService[F]): HttpRoutes[F] = {
     //To convine routes use the function `<+>`
-    createUser(userService) <+> getUser(userService)
+    createUser(userService) <+> getUser(userService) <+> updateUser(userService)
   }
 
 }
