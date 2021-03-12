@@ -73,7 +73,6 @@ class UsersController[F[_] : Sync] extends Http4sDsl[F] {
         }
     }
 
-
   def endpoints(userService: UserService[F]): HttpRoutes[F] = {
     //To combine routes use the function `<+>`
     createUser(userService) <+> getUser(userService) <+> updateUser(userService) <+> deleteUser(userService) <+> listUser(userService)
