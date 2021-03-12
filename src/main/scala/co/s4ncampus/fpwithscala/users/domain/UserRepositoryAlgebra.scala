@@ -13,5 +13,5 @@ trait UserRepositoryAlgebra[F[_]] {
 
   def findByLegalId(legalId: String): OptionT[F, User]
 
-  def updateUser(user: User): F[Boolean]
+  def updateUser(legalId: String, user: User): F[Boolean]
 }
