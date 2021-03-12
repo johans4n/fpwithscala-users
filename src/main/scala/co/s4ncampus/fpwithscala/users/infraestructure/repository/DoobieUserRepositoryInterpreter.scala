@@ -1,7 +1,6 @@
 package co.s4ncampus.fpwithscala.users.infraestructure.repository
 
 import co.s4ncampus.fpwithscala.users.domain._
-
 import cats.data._
 import cats.syntax.all._
 import doobie._
@@ -9,6 +8,11 @@ import doobie.implicits._
 import cats.effect.Bracket
 
 private object UserSQL {
+
+  def list():Query0[User] = sql"""
+    SELECT ID, LEGAL_ID, FIRST_NAME, LAST_NAME, EMAIL, PHONE
+    FROM USERS
+  """.query
 
   def insert(user: User): Update0 =
     sql"""
@@ -51,6 +55,7 @@ class DoobieUserRepositoryInterpreter[F[_] : Bracket[?[_], Throwable]](val xa: T
 
   def delUser(legalId: String): F[Boolean] = deleteUser(legalId).run.transact(xa).map(_ == 1)
 
+  def listUsers():F[List[User]] = list().to[List].transact(xa)
 
 }
 

@@ -64,10 +64,19 @@ class UsersController[F[_] : Sync] extends Http4sDsl[F] {
         }
     }
 
+  private def listUser(userService: UserService[F]): HttpRoutes[F] =
+    HttpRoutes.of[F] {
+      case GET -> Root  =>
+          userService.list() flatMap {
+          case Nil => NotFound()
+          case list => Ok(list.asJson)
+        }
+    }
+
 
   def endpoints(userService: UserService[F]): HttpRoutes[F] = {
-    //To convine routes use the function `<+>`
-    createUser(userService) <+> getUser(userService) <+> updateUser(userService) <+> deleteUser(userService)
+    //To combine routes use the function `<+>`
+    createUser(userService) <+> getUser(userService) <+> updateUser(userService) <+> deleteUser(userService) <+> listUser(userService)
   }
 
 }

@@ -19,6 +19,8 @@ class UserService[F[_]](repository: UserRepositoryAlgebra[F], validation: UserVa
   def delete(legalId: String): F[Boolean] =
     repository.delUser(legalId)
 
+  def list(): F[List[User]] = repository.listUsers()
+
 }
 
 object UserService {
